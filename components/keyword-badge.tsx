@@ -1,3 +1,5 @@
+"use client";
+
 import { getKeywordColor } from "@/lib/keyword-colors"
 
 interface KeywordBadgeProps {
@@ -6,6 +8,7 @@ interface KeywordBadgeProps {
 
 export default function KeywordBadge({ keyword }: KeywordBadgeProps) {
   const colorClass = getKeywordColor(keyword)
+  console.log("keyword called : " + colorClass)
 
   return (
     <span
