@@ -5,8 +5,12 @@ import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, ThumbsDown, ThumbsUp, Award } from "lucide-react"
+import { cookies } from "next/headers"
 
 export default async function StatsPage() {
+  // Force cookies to be read at the page level
+  cookies()
+
   const { mostLiked, mostDisliked, mostAllFormats } = await getTopCards()
 
   return (

@@ -2,19 +2,34 @@ import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 
 export async function createClient() {
-  const cookieStore = cookies()
+  // Create a cookies instance that we can reuse
+  const cookieStore = await cookies()
 
   return createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
     cookies: {
-      async get(name) {
-        const cookie = cookieStore.get(name)
-        return cookie?.value
+      get(name) {
+        // This is a synchronous function that returns the cookie value
+        // We need to use a synchronous approach here as the Supabase client expects it
+        try {
+          return cookieStore.get(name)?.value
+        } catch (error) {
+          console.error("Error getting cookie:", error)
+          return undefined
+        }
       },
-      async set(name, value, options) {
-        cookieStore.set({ name, value, ...options })
+      set(name, value, options) {
+        try {
+          cookieStore.set({ name, value, ...options })
+        } catch (error) {
+          console.error("Error setting cookie:", error)
+        }
       },
-      async remove(name, options) {
-        cookieStore.set({ name, value: "", ...options })
+      remove(name, options) {
+        try {
+          cookieStore.set({ name, value: "", ...options })
+        } catch (error) {
+          console.error("Error removing cookie:", error)
+        }
       },
     },
   })
