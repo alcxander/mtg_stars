@@ -118,12 +118,12 @@ export default function CardSwiper() {
 
   // Load initial cards when component mounts or when selectedSet changes
   useEffect(() => {
+    console.log("load cards")
     loadInitialCards()
     // Cleanup function to prevent state updates after unmount
     return () => {
       console.log("return 124")
       setIsUnmounted(true)
-      console.log("return 124b")
     }
   }, [selectedSet])
 
