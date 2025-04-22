@@ -7,7 +7,6 @@ export default async function Home() {
   // Force cookies to be read at the page level
   // This ensures cookies are properly initialized before any components that need them
   await cookies()
-  await sleep(5000);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-4 md:p-24">
@@ -23,8 +22,4 @@ export default async function Home() {
       </div>
     </main>
   )
-}
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
 }
