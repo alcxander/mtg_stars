@@ -55,7 +55,7 @@ export default function CardSwiper() {
   
 
   // Safe state update function to prevent updates on unmounted component
-  /*
+  
   const safeSetState = useCallback(
     <T,>(setter: React.Dispatch<React.SetStateAction<T>>, value: T) => {
       if (!isUnmounted) {
@@ -64,17 +64,6 @@ export default function CardSwiper() {
     },
     [isUnmounted],
   )
-    */
-
-const safeSetState = <T,>(
-  setter: React.Dispatch<React.SetStateAction<T>>, 
-  value: T, 
-  isUnmounted: boolean
-) => {
-  if (!isUnmounted) {
-    setter(value)
-  }
-}
 
   // Process card data to extract card faces and keywords if present
   const processCardData = useCallback(
