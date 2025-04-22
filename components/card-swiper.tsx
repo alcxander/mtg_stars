@@ -46,20 +46,13 @@ export default function CardSwiper() {
     return Math.min(distance / maxDistance, 1)
   })
 
-  const [hasMounted, setHasMounted] = useState(false)
-
-useEffect(() => {
-  setHasMounted(true)
-}, [])
-
-if (!hasMounted) return null
-
   // Set isUnmounted to true when component unmounts
   useEffect(() => {
     return () => {
       setIsUnmounted(true)
     }
   }, [])
+  
 
   // Safe state update function to prevent updates on unmounted component
   const safeSetState = useCallback(
