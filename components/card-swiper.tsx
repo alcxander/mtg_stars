@@ -121,7 +121,9 @@ export default function CardSwiper() {
     loadInitialCards()
     // Cleanup function to prevent state updates after unmount
     return () => {
+      console.log("return 124")
       setIsUnmounted(true)
+      console.log("return 124b")
     }
   }, [selectedSet])
 
@@ -158,7 +160,9 @@ export default function CardSwiper() {
 
     try {
       const cards = await fetchRandomCards(selectedSet, 5)
+      console.log("all cards fetched")
       if (!isUnmounted) {
+        console.log("!isUnmounted is true")
         if (cards && cards.length > 0) {
           safeSetState(setCard, cards[0])
           safeSetState(setCardQueue, cards.slice(1))
@@ -175,6 +179,7 @@ export default function CardSwiper() {
         })
       }
     } finally {
+      console.log("finally 1")
       if (!isUnmounted) {
         safeSetState(setLoading, false)
       }
