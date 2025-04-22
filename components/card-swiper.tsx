@@ -1,6 +1,8 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import type React from "react"
+
+import { useState, useEffect, useRef, useCallback } from "react"
 import { motion, useAnimation, type PanInfo, useMotionValue, useTransform } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -13,6 +15,8 @@ import { useMobile } from "@/hooks/use-mobile"
 import LoadingCard from "./loading-card"
 import SetSelector from "./set-selector"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import KeywordBadge from "./keyword-badge"
+import DualFacedCard from "./dual-faced-card"
 
 export default function CardSwiper() {
   const [card, setCard] = useState<any>(null)
@@ -27,6 +31,8 @@ export default function CardSwiper() {
   const [showAllFormatsButton, setShowAllFormatsButton] = useState(false)
   const prefetchingRef = useRef(false)
   const [nextCardVisible, setNextCardVisible] = useState(false)
+  const [cardFaces, setCardFaces] = useState<any[] | null>(null)
+  const [isUnmounted, setIsUnmounted] = useState(false)
 
   // Motion values for tracking swipe progress
   const x = useMotionValue(0)
@@ -39,87 +45,153 @@ export default function CardSwiper() {
     return Math.min(distance / maxDistance, 1)
   })
 
+  // Set isUnmounted to true when component unmounts
+  useEffect(() => {
+    return () => {
+      setIsUnmounted(true)
+    }
+  }, [])
+
+  // Safe state update function to prevent updates on unmounted component
+  const safeSetState = useCallback(
+    <T,>(setter: React.Dispatch<React.SetStateAction<T>>, value: T) => {
+      if (!isUnmounted) {
+        setter(value)
+      }
+    },
+    [isUnmounted],
+  )
+
+  // Process card data to extract card faces if present
+  const processCardData = useCallback(
+    (cardData: any) => {
+      if (cardData?.card_faces && typeof cardData.card_faces === "string") {
+        try {
+          const faces = JSON.parse(cardData.card_faces)
+          if (faces && Array.isArray(faces) && faces.length > 1) {
+            safeSetState(setCardFaces, faces)
+            return
+          }
+        } catch (e) {
+          console.error("Error parsing card faces:", e)
+        }
+      }
+      safeSetState(setCardFaces, null)
+    },
+    [safeSetState],
+  )
+
   // Load initial cards when component mounts or when selectedSet changes
   useEffect(() => {
     loadInitialCards()
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      setIsUnmounted(true)
+    }
   }, [selectedSet])
 
   // Monitor the card queue and prefetch more cards when needed
   useEffect(() => {
-    if (cardQueue.length < 3 && !prefetchingRef.current) {
+    if (cardQueue.length < 3 && !prefetchingRef.current && !isUnmounted) {
       prefetchMoreCards()
     }
-  }, [cardQueue])
+  }, [cardQueue, isUnmounted])
 
   // Update the next card whenever the card queue changes
   useEffect(() => {
-    if (cardQueue.length > 0) {
-      setNextCard(cardQueue[0])
-      setNextCardVisible(true)
-    } else {
-      setNextCard(null)
-      setNextCardVisible(false)
+    if (cardQueue.length > 0 && !isUnmounted) {
+      safeSetState(setNextCard, cardQueue[0])
+      safeSetState(setNextCardVisible, true)
+    } else if (!isUnmounted) {
+      safeSetState(setNextCard, null)
+      safeSetState(setNextCardVisible, false)
     }
-  }, [cardQueue])
+  }, [cardQueue, isUnmounted, safeSetState])
+
+  // Process card data when card changes
+  useEffect(() => {
+    if (card) {
+      processCardData(card)
+    }
+  }, [card, processCardData])
 
   const loadInitialCards = async () => {
-    setLoading(true)
-    setCardQueue([])
+    if (isUnmounted) return
+
+    safeSetState(setLoading, true)
+    safeSetState(setCardQueue, [])
+
     try {
       const cards = await fetchRandomCards(selectedSet, 5)
-      if (cards && cards.length > 0) {
-        setCard(cards[0])
-        setCardQueue(cards.slice(1))
-      } else {
-        setCard(null)
+      if (!isUnmounted) {
+        if (cards && cards.length > 0) {
+          safeSetState(setCard, cards[0])
+          safeSetState(setCardQueue, cards.slice(1))
+        } else {
+          safeSetState(setCard, null)
+        }
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load cards. Please try again.",
-        variant: "destructive",
-      })
+      if (!isUnmounted) {
+        toast({
+          title: "Error",
+          description: "Failed to load cards. Please try again.",
+          variant: "destructive",
+        })
+      }
     } finally {
-      setLoading(false)
+      if (!isUnmounted) {
+        safeSetState(setLoading, false)
+      }
     }
   }
 
   const prefetchMoreCards = async () => {
-    if (prefetchingRef.current) return
+    if (prefetchingRef.current || isUnmounted) return
 
     prefetchingRef.current = true
-    setFetchingMore(true)
+    if (!isUnmounted) {
+      safeSetState(setFetchingMore, true)
+    }
 
     try {
       const newCards = await fetchRandomCards(selectedSet, 5)
-      if (newCards && newCards.length > 0) {
-        setCardQueue((prev) => [...prev, ...newCards])
+      if (!isUnmounted && newCards && newCards.length > 0) {
+        safeSetState(setCardQueue, (prev) => [...prev, ...newCards])
       }
     } catch (error) {
       console.error("Error prefetching cards:", error)
     } finally {
-      setFetchingMore(false)
-      prefetchingRef.current = false
+      if (!isUnmounted) {
+        safeSetState(setFetchingMore, false)
+        prefetchingRef.current = false
+      }
     }
   }
 
   const loadNextCard = () => {
+    if (isUnmounted) return false
+
     if (cardQueue.length > 0) {
-      setCard(cardQueue[0])
-      setCardQueue((prev) => prev.slice(1))
-      setShowAllFormatsButton(false)
+      safeSetState(setCard, cardQueue[0])
+      safeSetState(setCardQueue, (prev) => prev.slice(1))
+      safeSetState(setShowAllFormatsButton, false)
       return true
     }
     return false
   }
 
   const handleDrag = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (isUnmounted) return
+
     // Update motion values during drag for both mobile and desktop
     x.set(info.offset.x)
     y.set(info.offset.y)
   }
 
   const handleDragEnd = async (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (isUnmounted) return
+
     const thresholdX = 100
     const thresholdY = 100
     const directionX = info.offset.x > 0 ? "right" : "left"
@@ -146,6 +218,8 @@ export default function CardSwiper() {
   }
 
   const handleCardAction = async (liked: boolean | null, allFormats = false) => {
+    if (isUnmounted) return
+
     // Determine animation direction
     let animationProps = {}
     if (liked === true && !allFormats) {
@@ -175,71 +249,89 @@ export default function CardSwiper() {
       transition: { duration: 0.5 },
     })
 
+    if (isUnmounted) return
+
     // Handle the rating action
     if (card && liked !== null) {
       try {
         await rateCard(card.id, liked, allFormats)
 
-        let toastMessage = ""
-        if (liked && allFormats) {
-          toastMessage = `You liked ${card.name} in all formats!`
-        } else if (liked) {
-          toastMessage = `You liked ${card.name}`
-        } else {
-          toastMessage = `You disliked ${card.name}`
-        }
+        if (!isUnmounted) {
+          let toastMessage = ""
+          if (liked && allFormats) {
+            toastMessage = `You liked ${card.name} in all formats!`
+          } else if (liked) {
+            toastMessage = `You liked ${card.name}`
+          } else {
+            toastMessage = `You disliked ${card.name}`
+          }
 
-        toast({
-          title: liked ? (allFormats ? "Card Liked in All Formats!" : "Card Liked!") : "Card Disliked",
-          description: toastMessage,
-        })
+          toast({
+            title: liked ? (allFormats ? "Card Liked in All Formats!" : "Card Liked!") : "Card Disliked",
+            description: toastMessage,
+          })
+        }
       } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to save your preference",
-          variant: "destructive",
-        })
+        if (!isUnmounted) {
+          toast({
+            title: "Error",
+            description: "Failed to save your preference",
+            variant: "destructive",
+          })
+        }
       }
-    } else if (liked === null) {
+    } else if (liked === null && !isUnmounted) {
       toast({
         title: "Card Skipped",
         description: "Moving to the next card",
       })
     }
 
+    if (isUnmounted) return
+
     // Load the next card from the queue
     const loaded = loadNextCard()
 
-    if (!loaded) {
+    if (!loaded && !isUnmounted) {
       // If queue is empty, show loading state and fetch more
-      setLoading(true)
+      safeSetState(setLoading, true)
       try {
         const newCards = await fetchRandomCards(selectedSet, 5)
-        if (newCards && newCards.length > 0) {
-          setCard(newCards[0])
-          setCardQueue(newCards.slice(1))
-        } else {
-          setCard(null)
+        if (!isUnmounted) {
+          if (newCards && newCards.length > 0) {
+            safeSetState(setCard, newCards[0])
+            safeSetState(setCardQueue, newCards.slice(1))
+          } else {
+            safeSetState(setCard, null)
+          }
         }
       } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to load more cards",
-          variant: "destructive",
-        })
+        if (!isUnmounted) {
+          toast({
+            title: "Error",
+            description: "Failed to load more cards",
+            variant: "destructive",
+          })
+        }
       } finally {
-        setLoading(false)
+        if (!isUnmounted) {
+          safeSetState(setLoading, false)
+        }
       }
     }
 
-    // Reset the card position and motion values
-    controls.set({ x: 0, y: 0, opacity: 1 })
-    x.set(0)
-    y.set(0)
+    if (!isUnmounted) {
+      // Reset the card position and motion values
+      controls.set({ x: 0, y: 0, opacity: 1 })
+      x.set(0)
+      y.set(0)
+    }
   }
 
   const handleSetSelected = (setCode: string | null) => {
-    setSelectedSet(setCode)
+    if (!isUnmounted) {
+      safeSetState(setSelectedSet, setCode)
+    }
   }
 
   if (loading) {
@@ -254,6 +346,25 @@ export default function CardSwiper() {
       </div>
     )
   }
+
+  // Parse card faces if they exist
+  let frontFace = null
+  let backFace = null
+
+  if (card.card_faces && typeof card.card_faces === "string") {
+    try {
+      const faces = JSON.parse(card.card_faces)
+      if (faces && Array.isArray(faces) && faces.length > 1) {
+        frontFace = faces[0]
+        backFace = faces[1]
+      }
+    } catch (e) {
+      console.error("Error parsing card faces:", e)
+    }
+  }
+
+  // Extract keywords
+  const keywords = Array.isArray(card.keywords) ? card.keywords : []
 
   return (
     <div className="flex flex-col items-center">
@@ -318,18 +429,43 @@ export default function CardSwiper() {
           <Card className="w-full h-full overflow-hidden shadow-xl">
             <CardContent className="p-0 h-full flex flex-col">
               <div className="relative flex-grow">
-                <Image
-                  src={card.image_url || "/placeholder.svg"}
-                  alt={card.name}
-                  fill
-                  className="object-contain"
-                  priority
-                />
+                {frontFace && backFace ? (
+                  <DualFacedCard
+                    frontImage={
+                      frontFace.image_uris?.normal || frontFace.image_uris?.large || frontFace.image_uris?.png || ""
+                    }
+                    backImage={
+                      backFace.image_uris?.normal || backFace.image_uris?.large || backFace.image_uris?.png || ""
+                    }
+                    frontName={frontFace.name}
+                    backName={backFace.name}
+                  />
+                ) : (
+                  <Image
+                    src={card.image_url || "/placeholder.svg"}
+                    alt={card.name}
+                    fill
+                    className="object-contain"
+                    priority
+                  />
+                )}
               </div>
               <div className="p-4 bg-black/80 text-white">
-                <h2 className="text-xl font-bold">{card.name}</h2>
-                <p className="text-sm opacity-80">{card.type_line}</p>
-                {card.mana_cost && <p className="text-sm mt-1">Mana Cost: {card.mana_cost}</p>}
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h2 className="text-xl font-bold">{card.name}</h2>
+                    <p className="text-sm opacity-80">{card.type_line}</p>
+                    {card.mana_cost && <p className="text-sm mt-1">Mana Cost: {card.mana_cost}</p>}
+                  </div>
+
+                  {keywords.length > 0 && (
+                    <div className="flex flex-wrap gap-1 justify-end max-w-[40%]">
+                      {keywords.map((keyword: string) => (
+                        <KeywordBadge key={keyword} keyword={keyword} />
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
