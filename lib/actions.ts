@@ -106,7 +106,8 @@ export async function fetchRandomCards(set: string | null = null, count = 5) {
         oracle_text: cardData.oracle_text || "",
         mana_cost: cardData.mana_cost || "",
         rarity: cardData.rarity || "",
-        keywords: cardData.keywords || [],
+        // Store keywords as a JSON string
+        keywords: Array.isArray(cardData.keywords) ? JSON.stringify(cardData.keywords) : "[]",
         // Add card_faces for dual-faced cards
         card_faces: cardData.card_faces ? JSON.stringify(cardData.card_faces) : null,
         has_two_faces: cardData.card_faces && cardData.card_faces.length > 1 ? true : false,

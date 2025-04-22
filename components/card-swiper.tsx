@@ -33,6 +33,7 @@ export default function CardSwiper() {
   const [nextCardVisible, setNextCardVisible] = useState(false)
   const [cardFaces, setCardFaces] = useState<any[] | null>(null)
   const [isUnmounted, setIsUnmounted] = useState(false)
+  const [cardKeywords, setCardKeywords] = useState<string[]>([])
 
   // Motion values for tracking swipe progress
   const x = useMotionValue(0)
@@ -62,21 +63,54 @@ export default function CardSwiper() {
     [isUnmounted],
   )
 
-  // Process card data to extract card faces if present
+  // Process card data to extract card faces and keywords if present
   const processCardData = useCallback(
     (cardData: any) => {
+      // Process card faces
       if (cardData?.card_faces && typeof cardData.card_faces === "string") {
         try {
           const faces = JSON.parse(cardData.card_faces)
           if (faces && Array.isArray(faces) && faces.length > 1) {
             safeSetState(setCardFaces, faces)
-            return
+          } else {
+            safeSetState(setCardFaces, null)
           }
         } catch (e) {
           console.error("Error parsing card faces:", e)
+          safeSetState(setCardFaces, null)
         }
+      } else {
+        safeSetState(setCardFaces, null)
       }
-      safeSetState(setCardFaces, null)
+
+      // Process keywords
+      if (cardData?.keywords) {
+        try {
+          let keywords = cardData.keywords
+
+          // If keywords is a string, try to parse it as JSON
+          if (typeof keywords === "string") {
+            try {
+              keywords = JSON.parse(keywords)
+            } catch (e) {
+              console.error("Error parsing keywords string:", e)
+              keywords = []
+            }
+          }
+
+          // Ensure keywords is an array
+          if (Array.isArray(keywords)) {
+            safeSetState(setCardKeywords, keywords)
+          } else {
+            safeSetState(setCardKeywords, [])
+          }
+        } catch (e) {
+          console.error("Error processing keywords:", e)
+          safeSetState(setCardKeywords, [])
+        }
+      } else {
+        safeSetState(setCardKeywords, [])
+      }
     },
     [safeSetState],
   )
@@ -363,9 +397,6 @@ export default function CardSwiper() {
     }
   }
 
-  // Extract keywords
-  const keywords = Array.isArray(card.keywords) ? card.keywords : []
-
   return (
     <div className="flex flex-col items-center">
       <div className="w-full max-w-md flex justify-between items-center mb-4">
@@ -452,15 +483,15 @@ export default function CardSwiper() {
               </div>
               <div className="p-4 bg-black/80 text-white">
                 <div className="flex justify-between items-start">
-                  <div>
+                  <div className="flex-1">
                     <h2 className="text-xl font-bold">{card.name}</h2>
                     <p className="text-sm opacity-80">{card.type_line}</p>
                     {card.mana_cost && <p className="text-sm mt-1">Mana Cost: {card.mana_cost}</p>}
                   </div>
 
-                  {keywords.length > 0 && (
-                    <div className="flex flex-wrap gap-1 justify-end max-w-[40%]">
-                      {keywords.map((keyword: string) => (
+                  {cardKeywords.length > 0 && (
+                    <div className="flex flex-wrap gap-1 justify-end max-w-[50%] ml-2">
+                      {cardKeywords.map((keyword: string) => (
                         <KeywordBadge key={keyword} keyword={keyword} />
                       ))}
                     </div>

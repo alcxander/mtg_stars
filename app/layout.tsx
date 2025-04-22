@@ -8,9 +8,9 @@ import { Toaster } from "@/components/ui/toaster"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Magic Card Swiper",
-  description: "Swipe through Magic: The Gathering cards and find your favorites",
-    generator: 'v0.dev'
+  title: "Magic the Gathering Draft Stars",
+  description: "Swipe through Magic: The Gathering cards and pick your draft favorites!",
+    generator: 'alcxander'
 }
 
 export default function RootLayout({
@@ -19,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           {children}
