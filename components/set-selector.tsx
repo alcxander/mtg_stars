@@ -52,7 +52,7 @@ export default function SetSelector({ onSetSelected, currentSet }: SetSelectorPr
   }
 
   // Find current set name
-  const currentSetName = currentSet ? sets.find((set) => set.code === currentSet)?.name || currentSet : "Latest Set"
+  const currentSetName = currentSet ? sets.find((set) => set.code === currentSet)?.name || currentSet : "All Sets"
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
