@@ -48,9 +48,9 @@ export default function CardSwiper() {
 
   // Set isUnmounted to true when component unmounts
   useEffect(() => {
-    setIsUnmounted(false) // Initialize to false when component mounts
+    //setIsUnmounted(false) // Initialize to false when component mounts
     return () => {
-      setIsUnmounted(true)
+      //setIsUnmounted(true)
     }
   }, [])
 
@@ -134,7 +134,7 @@ export default function CardSwiper() {
     loadInitialCards()
     // Cleanup function to prevent state updates after unmount
     return () => {
-      setIsUnmounted(true)
+      //setIsUnmounted(true)
     }
   }, [selectedSet])
 
