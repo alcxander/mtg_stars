@@ -59,6 +59,7 @@ export default function CardSwiper() {
   // Safe state update function to prevent updates on unmounted component
   const safeSetState = useCallback(
     <T,>(setter: React.Dispatch<React.SetStateAction<T>>, value: T) => {
+      console.log("safesetstate:"+isUnmounted)
       if (!isUnmounted) {
         setter(value)
       }
@@ -146,12 +147,21 @@ export default function CardSwiper() {
   useEffect(() => {
     console.log("we thinking about updating the card queue")
     if (cardQueue.length > 0 && !isUnmounted) {
+      console.log("we setting next card")
+
       safeSetState(setNextCard, cardQueue[0])
+      console.log("set next card visible")
+
       safeSetState(setNextCardVisible, true)
+      console.log("next card is visble")
     } else if (!isUnmounted) {
+      console.log("else if")
       safeSetState(setNextCard, null)
+      console.log("1")
       safeSetState(setNextCardVisible, false)
+      console.log("2")
     }
+    console.log("finish updating next card")
   }, [cardQueue, isUnmounted, safeSetState])
 
   // Process card data when card changes
@@ -160,17 +170,20 @@ export default function CardSwiper() {
       console.log("processing card data")
       processCardData(card)
     }
+    console.log("finish processing card data")
   }, [card, processCardData])
 
   const loadInitialCards = async () => {
     if (isUnmounted) return
     console.log("loading initial cards")
     safeSetState(setLoading, true)
+    console.log("set loading")
     safeSetState(setCardQueue, [])
     console.log("loaded and card queue set")
 
     try {
-      const cards = await fetchRandomCards(selectedSet, 5)
+      console.log("we gonna try fetch 5 random cards")
+      const cards = await fetchRandomCards(selectedSet, 1)
       if (!isUnmounted) {
         if (cards && cards.length > 0) {
           safeSetState(setCard, cards[0])
