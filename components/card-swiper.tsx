@@ -130,6 +130,8 @@ export default function CardSwiper() {
     return () => {
       console.log("unmount that sucka")
       setIsUnmounted(true)
+      console.log("sucka unounted")
+
     }
   }, [selectedSet])
 
@@ -146,7 +148,7 @@ export default function CardSwiper() {
   // Update the next card whenever the card queue changes
   useEffect(() => {
     console.log("we thinking about updating the card queue"+cardQueue.length)
-    if (cardQueue.length > 0 && !isUnmounted) {
+    if (cardQueue.length > 0 && !isUnmounted && cardQueue.length <4) {
       console.log("we setting next card")
 
       safeSetState(setNextCard, cardQueue[0])
