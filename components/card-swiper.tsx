@@ -139,7 +139,8 @@ export default function CardSwiper() {
   useEffect(() => {
     console.log("we thinking about fetching")
     if (cardQueue.length < 3 && !prefetchingRef.current && !isUnmounted) {
-      console.log("ok we fetching")
+      prefetchingRef.current = true; // lock immediately
+      console.log("⏳ Prefetching cards…");
       prefetchMoreCards()
       console.log("that is fetch"+cardQueue)
     }
@@ -213,10 +214,11 @@ export default function CardSwiper() {
     }
   }
 
+
   const prefetchMoreCards = async () => {
     if (prefetchingRef.current || isUnmounted) return
 
-    prefetchingRef.current = true
+    //prefetchingRef.current = true we dont need this if we set it outside the call, finally will release it as well
     if (!isUnmounted) {
       safeSetState(setFetchingMore, true)
     }
@@ -231,10 +233,11 @@ export default function CardSwiper() {
     } finally {
       if (!isUnmounted) {
         safeSetState(setFetchingMore, false)
-        prefetchingRef.current = false
       }
+      prefetchingRef.current = false
     }
   }
+
 
   const loadNextCard = () => {
     if (isUnmounted) return false
