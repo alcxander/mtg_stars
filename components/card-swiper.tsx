@@ -48,14 +48,15 @@ export default function CardSwiper() {
 
   // Set isUnmounted to true when component unmounts
   useEffect(() => {
-    //setIsUnmounted(false) // Initialize to false when component mounts
+    setIsUnmounted(false) // Initialize to false when component mounts
+    console.log("52:"+isUnmounted)
     return () => {
-      //setIsUnmounted(true)
+      console.log("54:"+isUnmounted)
+      setIsUnmounted(true)
     }
   }, [])
 
   // Safe state update function to prevent updates on unmounted component
-  /*
   const safeSetState = useCallback(
     <T,>(setter: React.Dispatch<React.SetStateAction<T>>, value: T) => {
       if (!isUnmounted) {
@@ -64,41 +65,31 @@ export default function CardSwiper() {
     },
     [isUnmounted],
   )
-    */
-
-  const safeSetState = <T,>(
-    setter: React.Dispatch<React.SetStateAction<T>>, 
-    value: T, 
-    isUnmounted: boolean
-  ) => {
-    if (!isUnmounted) {
-      setter(value)
-    }
-  }
-  
 
   // Process card data to extract card faces and keywords if present
   const processCardData = useCallback(
     (cardData: any) => {
       // Process card faces
+      console.log("73")
       if (cardData?.card_faces && typeof cardData.card_faces === "string") {
         try {
           const faces = JSON.parse(cardData.card_faces)
           if (faces && Array.isArray(faces) && faces.length > 1) {
-            setCardFaces(faces)
+            safeSetState(setCardFaces, faces)
           } else {
-            setCardFaces (null)
+            safeSetState(setCardFaces, null)
           }
         } catch (e) {
           console.error("Error parsing card faces:", e)
-          setCardFaces (null)
+          safeSetState(setCardFaces, null)
         }
       } else {
-        setCardFaces (null)
+        safeSetState(setCardFaces, null)
       }
 
       // Process keywords
       if (cardData?.keywords) {
+        console.log("92")
         try {
           let keywords = cardData.keywords
 
@@ -114,69 +105,78 @@ export default function CardSwiper() {
 
           // Ensure keywords is an array
           if (Array.isArray(keywords)) {
-            setCardKeywords (keywords)
+            safeSetState(setCardKeywords, keywords)
           } else {
-            setCardKeywords([])
+            safeSetState(setCardKeywords, [])
           }
         } catch (e) {
           console.error("Error processing keywords:", e)
-          setCardKeywords ([])
+          safeSetState(setCardKeywords, [])
         }
       } else {
-        setCardKeywords ([])
+        safeSetState(setCardKeywords, [])
       }
     },
-    [],
+    [safeSetState],
   )
 
   // Load initial cards when component mounts or when selectedSet changes
   useEffect(() => {
+    console.log("we loading")
     loadInitialCards()
+    console.log("we loaded")
     // Cleanup function to prevent state updates after unmount
     return () => {
-      //setIsUnmounted(true)
+      console.log("unmount that sucka")
+      setIsUnmounted(true)
     }
   }, [selectedSet])
 
   // Monitor the card queue and prefetch more cards when needed
   useEffect(() => {
+    console.log("we thinking about fetching")
     if (cardQueue.length < 3 && !prefetchingRef.current && !isUnmounted) {
+      console.log("ok we fetching")
       prefetchMoreCards()
+      console.log("that is fetch")
     }
   }, [cardQueue, isUnmounted])
 
   // Update the next card whenever the card queue changes
   useEffect(() => {
+    console.log("we thinking about updating the card queue")
     if (cardQueue.length > 0 && !isUnmounted) {
-      setNextCard (cardQueue[0])
-      setNextCardVisible (true)
+      safeSetState(setNextCard, cardQueue[0])
+      safeSetState(setNextCardVisible, true)
     } else if (!isUnmounted) {
-      setNextCard(null)
-      setNextCardVisible(false)
+      safeSetState(setNextCard, null)
+      safeSetState(setNextCardVisible, false)
     }
-  }, [cardQueue, isUnmounted])
+  }, [cardQueue, isUnmounted, safeSetState])
 
   // Process card data when card changes
   useEffect(() => {
     if (card) {
+      console.log("processing card data")
       processCardData(card)
     }
   }, [card, processCardData])
 
   const loadInitialCards = async () => {
     if (isUnmounted) return
-
-    setLoading(true)
-    setCardQueue([])
+    console.log("loading initial cards")
+    safeSetState(setLoading, true)
+    safeSetState(setCardQueue, [])
+    console.log("loaded and card queue set")
 
     try {
       const cards = await fetchRandomCards(selectedSet, 5)
       if (!isUnmounted) {
         if (cards && cards.length > 0) {
-          setCard(cards[0])
-          setCardQueue(cards.slice(1))
-        } else{
-          setCard(null)
+          safeSetState(setCard, cards[0])
+          safeSetState(setCardQueue, cards.slice(1))
+        } else {
+          safeSetState(setCard, null)
         }
       }
     } catch (error) {
@@ -189,7 +189,7 @@ export default function CardSwiper() {
       }
     } finally {
       if (!isUnmounted) {
-        setLoading(false)
+        safeSetState(setLoading, false)
       }
     }
   }
@@ -199,19 +199,19 @@ export default function CardSwiper() {
 
     prefetchingRef.current = true
     if (!isUnmounted) {
-      setFetchingMore(true)
+      safeSetState(setFetchingMore, true)
     }
 
     try {
       const newCards = await fetchRandomCards(selectedSet, 5)
       if (!isUnmounted && newCards && newCards.length > 0) {
-        setCardQueue((prev) => [...prev, ...newCards])
+        safeSetState(setCardQueue, (prev) => [...prev, ...newCards])
       }
     } catch (error) {
       console.error("Error prefetching cards:", error)
     } finally {
       if (!isUnmounted) {
-        setFetchingMore(false)
+        safeSetState(setFetchingMore, false)
         prefetchingRef.current = false
       }
     }
@@ -221,9 +221,9 @@ export default function CardSwiper() {
     if (isUnmounted) return false
 
     if (cardQueue.length > 0) {
-      setCard(cardQueue[0])
-      setCardQueue((prev) => prev.slice(1))
-      setShowAllFormatsButton(false)
+      safeSetState(setCard, cardQueue[0])
+      safeSetState(setCardQueue, (prev) => prev.slice(1))
+      safeSetState(setShowAllFormatsButton, false)
       return true
     }
     return false
@@ -342,15 +342,15 @@ export default function CardSwiper() {
 
     if (!loaded && !isUnmounted) {
       // If queue is empty, show loading state and fetch more
-      setLoading(true)
+      safeSetState(setLoading, true)
       try {
         const newCards = await fetchRandomCards(selectedSet, 5)
         if (!isUnmounted) {
           if (newCards && newCards.length > 0) {
-            setCard(newCards[0])
-            setCardQueue(newCards.slice(1))
+            safeSetState(setCard, newCards[0])
+            safeSetState(setCardQueue, newCards.slice(1))
           } else {
-            setCard(null)
+            safeSetState(setCard, null)
           }
         }
       } catch (error) {
@@ -363,7 +363,7 @@ export default function CardSwiper() {
         }
       } finally {
         if (!isUnmounted) {
-          setLoading(false)
+          safeSetState(setLoading, false)
         }
       }
     }
@@ -378,7 +378,7 @@ export default function CardSwiper() {
 
   const handleSetSelected = (setCode: string | null) => {
     if (!isUnmounted) {
-      setSelectedSet(setCode)
+      safeSetState(setSelectedSet, setCode)
     }
   }
 
