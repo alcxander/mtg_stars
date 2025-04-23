@@ -48,14 +48,13 @@ export default function CardSwiper() {
 
   // Set isUnmounted to true when component unmounts
   useEffect(() => {
+    setIsUnmounted(false) // Initialize to false when component mounts
     return () => {
       setIsUnmounted(true)
     }
   }, [])
-  
 
   // Safe state update function to prevent updates on unmounted component
-  /*
   const safeSetState = useCallback(
     <T,>(setter: React.Dispatch<React.SetStateAction<T>>, value: T) => {
       if (!isUnmounted) {
@@ -64,17 +63,6 @@ export default function CardSwiper() {
     },
     [isUnmounted],
   )
-    */
-
-const safeSetState = <T,>(
-  setter: React.Dispatch<React.SetStateAction<T>>, 
-  value: T, 
-  isUnmounted: boolean
-) => {
-  if (!isUnmounted) {
-    setter(value)
-  }
-}
 
   // Process card data to extract card faces and keywords if present
   const processCardData = useCallback(
@@ -130,11 +118,9 @@ const safeSetState = <T,>(
 
   // Load initial cards when component mounts or when selectedSet changes
   useEffect(() => {
-    //console.log("load cards")
     loadInitialCards()
     // Cleanup function to prevent state updates after unmount
     return () => {
-      console.log("return 124")
       setIsUnmounted(true)
     }
   }, [selectedSet])
@@ -172,9 +158,7 @@ const safeSetState = <T,>(
 
     try {
       const cards = await fetchRandomCards(selectedSet, 5)
-      //console.log("all cards fetched")
       if (!isUnmounted) {
-        console.log("!isUnmounted is true")
         if (cards && cards.length > 0) {
           safeSetState(setCard, cards[0])
           safeSetState(setCardQueue, cards.slice(1))
@@ -191,7 +175,6 @@ const safeSetState = <T,>(
         })
       }
     } finally {
-      //console.log("finally 1")
       if (!isUnmounted) {
         safeSetState(setLoading, false)
       }
