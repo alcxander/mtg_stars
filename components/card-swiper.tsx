@@ -466,7 +466,7 @@ export default function CardSwiper() {
                     fill
                     className="object-contain"
                     draggable={true}
-                    style={{pointerEvents: 'auto'}}
+                    style={{pointerEvents: 'none'}}
                   />
                 </div>
                 <div className="p-4 bg-black/80 text-white">
@@ -516,6 +516,8 @@ export default function CardSwiper() {
                     fill
                     className="object-contain"
                     priority
+                    draggable={true}
+                    style={{pointerEvents: 'none'}}
                   />
                 )}
               </div>
