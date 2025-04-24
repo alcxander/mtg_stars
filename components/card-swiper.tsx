@@ -48,16 +48,22 @@ export default function CardSwiper() {
 
   // Set isUnmounted to true when component unmounts
   useEffect(() => {
+    setIsUnmounted(false) // Initialize to false when component mounts
+    console.log("52:"+isUnmounted)
     return () => {
+      console.log("54:"+isUnmounted)
       setIsUnmounted(true)
     }
   }, [])
-  
 
   // Safe state update function to prevent updates on unmounted component
+<<<<<<< HEAD
   
+=======
+>>>>>>> 8795787c600f66c2715239722b3df2a08651060c
   const safeSetState = useCallback(
     <T,>(setter: React.Dispatch<React.SetStateAction<T>>, value: T) => {
+      console.log("safesetstate:"+isUnmounted)
       if (!isUnmounted) {
         setter(value)
       }
@@ -69,6 +75,7 @@ export default function CardSwiper() {
   const processCardData = useCallback(
     (cardData: any) => {
       // Process card faces
+      console.log("73")
       if (cardData?.card_faces && typeof cardData.card_faces === "string") {
         try {
           const faces = JSON.parse(cardData.card_faces)
@@ -87,6 +94,7 @@ export default function CardSwiper() {
 
       // Process keywords
       if (cardData?.keywords) {
+        console.log("92")
         try {
           let keywords = cardData.keywords
 
@@ -119,55 +127,78 @@ export default function CardSwiper() {
 
   // Load initial cards when component mounts or when selectedSet changes
   useEffect(() => {
-    //console.log("load cards")
+    console.log("we loading")
     loadInitialCards()
+    console.log("we loaded")
     // Cleanup function to prevent state updates after unmount
     return () => {
-      console.log("return 124")
+      console.log("unmount that sucka")
       setIsUnmounted(true)
+      console.log("sucka unounted")
+
     }
   }, [selectedSet])
 
   // Monitor the card queue and prefetch more cards when needed
   useEffect(() => {
+    console.log("we thinking about fetching")
     if (cardQueue.length < 3 && !prefetchingRef.current && !isUnmounted) {
+      prefetchingRef.current = true; // lock immediately
+      console.log("⏳ Prefetching cards…");
       prefetchMoreCards()
+      console.log("that is fetch"+cardQueue)
     }
   }, [cardQueue, isUnmounted])
 
   // Update the next card whenever the card queue changes
   useEffect(() => {
-    if (cardQueue.length > 0 && !isUnmounted) {
+    console.log("we thinking about updating the card queue"+cardQueue.length)
+    if (cardQueue.length > 0 && !isUnmounted && cardQueue.length <4) {
+      console.log("we setting next card")
+
       safeSetState(setNextCard, cardQueue[0])
+      console.log("set next card visible")
+
       safeSetState(setNextCardVisible, true)
+      console.log("next card is visble")
     } else if (!isUnmounted) {
+      console.log("else if")
       safeSetState(setNextCard, null)
+      console.log("set next card visible")
       safeSetState(setNextCardVisible, false)
+      console.log("finished settign next card visible")
     }
+    console.log("finish updating next card")
   }, [cardQueue, isUnmounted, safeSetState])
 
   // Process card data when card changes
   useEffect(() => {
     if (card) {
+      console.log("processing card data")
       processCardData(card)
     }
+    console.log("finish processing card data")
   }, [card, processCardData])
 
   const loadInitialCards = async () => {
     if (isUnmounted) return
-
+    console.log("loading initial cards")
     safeSetState(setLoading, true)
+    console.log("set loading")
     safeSetState(setCardQueue, [])
+    console.log("loaded and card queue set")
 
     try {
+      console.log("we gonna try fetch 5 random cards")
       const cards = await fetchRandomCards(selectedSet, 5)
-      //console.log("all cards fetched")
       if (!isUnmounted) {
-        console.log("!isUnmounted is true")
+        console.log("we are mounted and we have cards"+cards)
         if (cards && cards.length > 0) {
+          console.log("cards && cards.length > 0")
           safeSetState(setCard, cards[0])
           safeSetState(setCardQueue, cards.slice(1))
         } else {
+          console.log("we in the else of this now")
           safeSetState(setCard, null)
         }
       }
@@ -180,17 +211,18 @@ export default function CardSwiper() {
         })
       }
     } finally {
-      //console.log("finally 1")
       if (!isUnmounted) {
+        console.log("we in the finally now of setting loading on card interactions")
         safeSetState(setLoading, false)
       }
     }
   }
 
+
   const prefetchMoreCards = async () => {
     if (prefetchingRef.current || isUnmounted) return
 
-    prefetchingRef.current = true
+    //prefetchingRef.current = true we dont need this if we set it outside the call, finally will release it as well
     if (!isUnmounted) {
       safeSetState(setFetchingMore, true)
     }
@@ -205,10 +237,11 @@ export default function CardSwiper() {
     } finally {
       if (!isUnmounted) {
         safeSetState(setFetchingMore, false)
-        prefetchingRef.current = false
       }
+      prefetchingRef.current = false
     }
   }
+
 
   const loadNextCard = () => {
     if (isUnmounted) return false
