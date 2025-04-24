@@ -10,7 +10,7 @@ export default async function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-4 md:p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm">
+      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm overflow-hidden">
         <h1 className="text-4xl font-bold text-center mb-8">Magic Card Draft Swiper</h1>
         <p className="text-center mb-12 text-muted-foreground">
           Swipe right to <span className="text-green-400">like</span>, left to <span className="text-red-500">dislike</span>. Find your favorite Magic: The Gathering cards for <span className="text-gray-50">drafting</span>!

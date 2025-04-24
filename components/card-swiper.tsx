@@ -465,6 +465,8 @@ export default function CardSwiper() {
                     alt={nextCard.name}
                     fill
                     className="object-contain"
+                    draggable={true}
+                    style={{pointerEvents: 'auto'}}
                   />
                 </div>
                 <div className="p-4 bg-black/80 text-white">
