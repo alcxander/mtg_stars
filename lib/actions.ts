@@ -7,7 +7,7 @@ export async function fetchRandomCards(set: string | null = null, count = 5) {
   try {
     const supabase = await createClient()
     const cards = []
-
+/*
     // If a set is specified, try to fetch from our database first
     if (set) {
       // Get count of cards with this set
@@ -76,7 +76,7 @@ export async function fetchRandomCards(set: string | null = null, count = 5) {
         }
       }
     }
-
+*/
     // If we couldn't get enough cards from the database, fetch from Scryfall API
     const fetchedCards = []
     for (let i = 0; i < count; i++) {
@@ -93,6 +93,7 @@ export async function fetchRandomCards(set: string | null = null, count = 5) {
       }
 
       const cardData = await response.json()
+      //console.dir("card data ********** "+cardData, {depth: null})
 
       // Extract the relevant data
       const card = {

@@ -89,8 +89,10 @@ export default function CardSwiper() {
       }
 
       // Process keywords
+      console.log("92")
+      //console.dir(cardData, {depth: null});
       if (cardData?.keywords) {
-        console.log("92")
+        console.log("94")
         try {
           let keywords = cardData.keywords
 
@@ -106,6 +108,7 @@ export default function CardSwiper() {
 
           // Ensure keywords is an array
           if (Array.isArray(keywords)) {
+            console.log("setting keywords")
             safeSetState(setCardKeywords, keywords)
           } else {
             safeSetState(setCardKeywords, [])
@@ -531,6 +534,7 @@ export default function CardSwiper() {
 
                   {cardKeywords.length > 0 && (
                     <div className="flex flex-wrap gap-1 justify-end max-w-[50%] ml-2">
+                      <p>keyword</p>
                       {cardKeywords.map((keyword: string) => (
                         <KeywordBadge key={keyword} keyword={keyword} />
                       ))}
