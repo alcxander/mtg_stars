@@ -57,10 +57,6 @@ export default function CardSwiper() {
   }, [])
 
   // Safe state update function to prevent updates on unmounted component
-<<<<<<< HEAD
-  
-=======
->>>>>>> 8795787c600f66c2715239722b3df2a08651060c
   const safeSetState = useCallback(
     <T,>(setter: React.Dispatch<React.SetStateAction<T>>, value: T) => {
       console.log("safesetstate:"+isUnmounted)
