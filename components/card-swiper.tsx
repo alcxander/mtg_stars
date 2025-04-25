@@ -437,7 +437,7 @@ export default function CardSwiper() {
   }
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center w-full h-full">
       <div className="w-full max-w-md flex justify-between items-center mb-4">
         <SetSelector onSetSelected={handleSetSelected} currentSet={selectedSet} />
         <Link href="/stats">
