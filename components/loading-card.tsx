@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 export default function LoadingCard() {
   return (
-    <div className="w-full max-w-md h-[500px] mb-8">
+    <div className="w-full max-w-md h-[500px] mb-8 justify-center">
       <Card className="w-full h-full overflow-hidden">
         <CardContent className="p-0 h-full flex flex-col">
           <div className="relative flex-grow">
