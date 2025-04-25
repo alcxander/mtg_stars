@@ -534,7 +534,7 @@ export default function CardSwiper() {
 
                   {cardKeywords.length > 0 && (
                     <div className="flex flex-wrap gap-1 justify-end max-w-[50%] ml-2">
-                      <p>keyword</p>
+                      <p>keyword(s):</p>
                       {cardKeywords.map((keyword: string) => (
                         <KeywordBadge key={keyword} keyword={keyword} />
                       ))}

@@ -3,6 +3,7 @@ import { Suspense } from "react"
 import LoadingCard from "@/components/loading-card"
 import { cookies } from "next/headers"
 
+
 export default async function Home() {
   // Force cookies to be read at the page level
   // This ensures cookies are properly initialized before any components that need them
