@@ -609,7 +609,6 @@ export default function CardSwiper() {
           </Tooltip>
         </TooltipProvider>
 
-        {showAllFormatsButton && (
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -627,7 +626,7 @@ export default function CardSwiper() {
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-        )}
+        
       </div>
 
       <div className="text-center">
